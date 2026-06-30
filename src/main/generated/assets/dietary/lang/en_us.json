@@ -1,6 +1,5 @@
 {
-  "commands.diet.clear_tag": "Cleared your dietary tag",
-  "commands.diet.get_tag": "Your dietary tag is %s",
-  "commands.diet.invalid_tag": "There are no tags named \"%s\"",
-  "commands.diet.set_tag": "Set your dietary tag to \"%s\""
+  "commands.diet.add_item": "Added item %s to your diet",
+  "commands.diet.clear_items": "Cleared your diet",
+  "commands.diet.get_items": "Your diet consists of %s"
 }

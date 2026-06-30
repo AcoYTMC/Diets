@@ -3,12 +3,10 @@
 	"package": "net.acoyt.dietary.mixin",
 	"compatibilityLevel": "JAVA_21",
 	"mixins": [
+		"ComponentHolderMixin",
 		"ItemStackMixin"
 	],
-	"client": [
-		"client.ClientPlayNetworkHandlerMixin",
-		"client.ItemMixin"
-	],
+	"client": [],
 	"injectors": {
 		"defaultRequire": 1
 	}

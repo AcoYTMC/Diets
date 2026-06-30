@@ -15,10 +15,9 @@ public class DietaryDatagen implements DataGeneratorEntrypoint {
 
 		pack.addProvider((d, c) -> new FabricLanguageProvider(d, c) {
 			public void generateTranslations(RegistryWrapper.WrapperLookup registries, TranslationBuilder builder) {
-				builder.add("commands.diet.invalid_tag", "There are no tags named \"%s\"");
-				builder.add("commands.diet.set_tag", "Set your dietary tag to \"%s\"");
-				builder.add("commands.diet.clear_tag", "Cleared your dietary tag");
-				builder.add("commands.diet.get_tag", "Your dietary tag is %s");
+				builder.add("commands.diet.add_item", "Added item %s to your diet");
+				builder.add("commands.diet.clear_items", "Cleared your diet");
+				builder.add("commands.diet.get_items", "Your diet consists of %s");
 			}
 		});
 	}

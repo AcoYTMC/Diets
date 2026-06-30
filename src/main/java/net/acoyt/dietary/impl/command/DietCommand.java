@@ -2,18 +2,18 @@ package net.acoyt.dietary.impl.command;
 
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
-import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import net.acoyt.dietary.impl.cca.entity.DietComponent;
 import net.minecraft.command.CommandRegistryAccess;
-import net.minecraft.command.argument.RegistryPredicateArgumentType;
-import net.minecraft.command.argument.RegistryPredicateArgumentType.RegistryPredicate;
+import net.minecraft.command.argument.RegistryEntryReferenceArgumentType;
 import net.minecraft.item.Item;
 import net.minecraft.registry.RegistryKeys;
-import net.minecraft.registry.tag.TagKey;
+import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
+
+import java.util.List;
 
 import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
@@ -22,25 +22,17 @@ import static net.minecraft.server.command.CommandManager.literal;
  * @author AcoYT
  */
 public class DietCommand {
-    private static final DynamicCommandExceptionType INVALID_TAG_EXCEPTION = new DynamicCommandExceptionType(
-            id -> Text.stringifiedTranslatable("commands.diet.invalid_tag", id)
-    );
-
-    public static void register(CommandDispatcher<ServerCommandSource> dispatcher, CommandRegistryAccess ignoredAccess, CommandManager.RegistrationEnvironment ignoredEnvironment) {
+    public static void register(CommandDispatcher<ServerCommandSource> dispatcher, CommandRegistryAccess access, CommandManager.RegistrationEnvironment ignoredEnvironment) {
         dispatcher.register(literal("diet")
-                .then(literal("set")
-                        .then(argument("tag", RegistryPredicateArgumentType.registryPredicate(RegistryKeys.ITEM))
+                .then(literal("add")
+                        .then(argument("item", RegistryEntryReferenceArgumentType.registryEntry(access, RegistryKeys.ITEM))
                                 .executes(context -> {
                                     ServerCommandSource source = context.getSource();
                                     ServerPlayerEntity player = source.getPlayerOrThrow();
 
-                                    RegistryPredicate<Item> predicate = RegistryPredicateArgumentType.getPredicate(
-                                            context, "tag", RegistryKeys.ITEM, INVALID_TAG_EXCEPTION);
-
-                                    predicate.getKey().ifRight(tag -> {
-                                        DietComponent.KEY.get(player).setDietTag(tag);
-                                        source.sendFeedback(() -> Text.translatable("commands.diet.set_tag", "#" + tag.id()), false);
-                                    });
+                                    RegistryEntry<Item> entry = RegistryEntryReferenceArgumentType.getRegistryEntry(context, "item", RegistryKeys.ITEM);
+                                    DietComponent.KEY.get(player).addAllowedItem(entry);
+                                    source.sendFeedback(() -> Text.translatable("commands.diet.add_item", entry.getIdAsString()), false);
 
                                     return Command.SINGLE_SUCCESS;
                                 })
@@ -50,8 +42,8 @@ public class DietCommand {
                             ServerCommandSource source = context.getSource();
                             ServerPlayerEntity player = source.getPlayerOrThrow();
 
-                            DietComponent.KEY.get(player).setDietTag(null);
-                            source.sendFeedback(() -> Text.translatable("commands.diet.clear_tag"), false);
+                            DietComponent.KEY.get(player).clearAllowedItems();
+                            source.sendFeedback(() -> Text.translatable("commands.diet.clear_items"), false);
 
                             return Command.SINGLE_SUCCESS;
                         })
@@ -60,11 +52,8 @@ public class DietCommand {
                             ServerCommandSource source = context.getSource();
                             ServerPlayerEntity player = source.getPlayerOrThrow();
 
-                            TagKey<Item> itemTag = DietComponent.KEY.get(player).getDietTag();
-                            source.sendFeedback(() -> Text.translatable("commands.diet.get_tag", itemTag != null
-                                    ? "\"#" + itemTag.id().toString() + "\"" // eg. "#minecraft:wool"
-                                    : "empty"
-                            ), false);
+                            List<RegistryEntry<Item>> allowedItems = DietComponent.KEY.get(player).getAllowedItems();
+                            source.sendFeedback(() -> Text.translatable("commands.diet.get_items", allowedItems.stream().map(RegistryEntry::getIdAsString).toList().toString()), false);
 
                             return Command.SINGLE_SUCCESS;
                         })
